@@ -16,6 +16,10 @@ library(aws.alexa)
 
 # Load Data on GA Vaccine Locations
 
+-   [<https://opendata.atlantaregional.com/datasets/JohnsCreekGA::vaccination-locations-in-georgia/data?geometry=-87.910%2C29.898%2C-78.813%2C36.333>](https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fopendata.atlantaregional.com%2Fdatasets%2FJohnsCreekGA%3A%3Avaccination-locations-in-georgia%2Fdata%3Fgeometry%3D-87.910%252C29.898%252C-78.813%252C36.333&data=04%7C01%7Candrew.walker%40emory.edu%7Cfb5e2f80f2ae44ab8cab08d8cb19d112%7Ce004fb9cb0a4424fbcd0322606d5df38%7C0%7C0%7C637482659032160171%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=3scGweksr%2BqLzj%2FBt%2BQXhe3N8fqY1M5ik9%2B%2BFO622YM%3D&reserved=0 "Original URL: https://opendata.atlantaregional.com/datasets/JohnsCreekGA::vaccination-locations-in-georgia/data?geometry=-87.910%2C29.898%2C-78.813%2C36.333. Click or tap if you trust this link.")
+
+-   
+
 ```{r, get_data}
 
 locations <- jsonlite::fromJSON("https://opendata.arcgis.com/datasets/123f98093dd249159bdb635f4b834fc0_0.geojson", flatten = TRUE)
@@ -35,26 +39,46 @@ creds_raw <- read_csv("rootkey.csv", col_names = FALSE)
 creds <- sub("^[^_]*=", "", creds_raw)
 
 test <- head(location_list, n = 20)
+test <- location_list
 
-str_creds[1,1]
 creds_ready <- creds_raw %>% 
   mutate(correct = substring(X1, regexpr("=", X1) + 1, nchar(X1))) %>% 
   select(correct)
 set_secret_key(key = creds_ready[1,1], secret = creds_ready[2,1])
 
-webdata <- aws.alexa::traffic_history(test$properties.AdditionalData)
-
-webdata <- safe_web_traffic(test$properties.AdditionalData)
-
-safely
-safe_web_traffic <- safely(traffic_history)
-
 test_webdata <- test %>% 
   mutate(web_history = map(test$properties.AdditionalData, traffic_history)) 
 #Tidy Version
-unnest_test <- test_webdata %>% 
+clinic_web_traffic_data <- test_webdata %>% 
   flatten() %>% 
   unnest(web_history)
 
+
+
 test$properties.AdditionalData
+```
+
+# COVID-19 GA County Data
+
+```{r, GACOVIDcsv}
+temp <- tempfile()
+download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
+ga_county_covid_data <- read_csv(unz(temp, "county_cases.csv"))
+unlink(temp)
+
+download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
+ga_county_covid_data_demographics_race <- read_csv(unz(temp, "demographics_by_race_eth.csv"))
+unlink(temp)
+
+download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
+ga_county_covid_data_demographics_race <- read_csv(unz(temp, "demographics_by_race_eth.csv"))
+unlink(temp)
+
+download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
+ga_county_covid_data_demographics_sex <- read_csv(unz(temp, "demographics_by_sex.csv"))
+unlink(temp)
+
+download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
+ga_county_covid_data_demographics_age <- read_csv(unz(temp, "demographics_by_age_group.csv"))
+unlink(temp)
 ```
