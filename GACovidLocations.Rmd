@@ -63,22 +63,50 @@ test$properties.AdditionalData
 ```{r, GACOVIDcsv}
 temp <- tempfile()
 download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
-ga_county_covid_data <- read_csv(unz(temp, "county_cases.csv"))
+ga_county_covid_data <- read_csv(unz(temp, "county_cases.csv")) %>% 
+  mutate(date = Sys.Date())
 unlink(temp)
 
 download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
-ga_county_covid_data_demographics_race <- read_csv(unz(temp, "demographics_by_race_eth.csv"))
+ga_county_covid_data_demographics_race <- read_csv(unz(temp, "demographics_by_race_eth.csv"))%>% 
+  mutate(date = Sys.Date())
 unlink(temp)
 
 download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
-ga_county_covid_data_demographics_race <- read_csv(unz(temp, "demographics_by_race_eth.csv"))
+ga_county_covid_data_demographics_race <- read_csv(unz(temp, "demographics_by_race_eth.csv"))%>% 
+  mutate(date = Sys.Date())
 unlink(temp)
 
 download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
-ga_county_covid_data_demographics_sex <- read_csv(unz(temp, "demographics_by_sex.csv"))
+ga_county_covid_data_demographics_sex <- read_csv(unz(temp, "demographics_by_sex.csv")) %>% 
+  mutate(date = Sys.Date())
 unlink(temp)
 
 download.file("https://ga-covid19.ondemand.sas.com/docs/ga_covid_data.zip",temp)
-ga_county_covid_data_demographics_age <- read_csv(unz(temp, "demographics_by_age_group.csv"))
+ga_county_covid_data_demographics_age <- read_csv(unz(temp, "demographics_by_age_group.csv")) %>% 
+  mutate(date = Sys.Date())
 unlink(temp)
+```
+
+```{r, write_dataframes}
+clinic_web_traffic_data_tibble <- as_tibble(clinic_web_traffic_data)
+
+clinic_web_traffic_data_filename <- paste(Sys.Date(),"clinic_web_traffic_data.rds")
+
+ga_county_covid_data_filename <- paste(Sys.Date(),"ga_county_covid_data.rds")
+
+ga_county_covid_data_demographics_race_filename <- paste(Sys.Date(),"ga_county_covid_data_demographics_race.rds")
+
+ga_county_covid_data_demographics_sex_filename <- paste(Sys.Date(),"ga_county_covid_data_demographics_sex.rds")
+
+ga_county_covid_data_demographics_age_filename <- paste(Sys.Date(),"ga_county_covid_data_demographics_age.rds")
+
+
+
+saveRDS(clinic_web_traffic_data, clinic_web_traffic_data_filename)
+saveRDS(ga_county_covid_data, ga_county_covid_data_filename)
+saveRDS(ga_county_covid_data_demographics_race, ga_county_covid_data_demographics_race_filename)
+saveRDS(ga_county_covid_data_demographics_sex, ga_county_covid_data_demographics_sex_filename)
+saveRDS(ga_county_covid_data_demographics_age, ga_county_covid_data_demographics_age_filename)
+
 ```
