@@ -1,0 +1,60 @@
+---
+title: "CovidVaccineSites"
+author: "Drew Walker"
+date: "2/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(jsonlite)
+library(knitr)
+library(purrr)
+library(polite)
+library(aws.alexa)
+```
+
+# Load Data on GA Vaccine Locations
+
+```{r, get_data}
+
+locations <- jsonlite::fromJSON("https://opendata.arcgis.com/datasets/123f98093dd249159bdb635f4b834fc0_0.geojson", flatten = TRUE)
+
+location_list <- locations$features
+
+kable(location_list)
+```
+
+# Get site traffic estimations for each site's page on ga public health website
+
+<https://github.com/cloudyr/aws.alexa>
+
+```{r, alexa r package}
+
+creds_raw <- read_csv("rootkey.csv", col_names = FALSE)
+creds <- sub("^[^_]*=", "", creds_raw)
+
+test <- head(location_list, n = 20)
+
+str_creds[1,1]
+creds_ready <- creds_raw %>% 
+  mutate(correct = substring(X1, regexpr("=", X1) + 1, nchar(X1))) %>% 
+  select(correct)
+set_secret_key(key = creds_ready[1,1], secret = creds_ready[2,1])
+
+webdata <- aws.alexa::traffic_history(test$properties.AdditionalData)
+
+webdata <- safe_web_traffic(test$properties.AdditionalData)
+
+safely
+safe_web_traffic <- safely(traffic_history)
+
+test_webdata <- test %>% 
+  mutate(web_history = map(test$properties.AdditionalData, traffic_history)) 
+#Tidy Version
+unnest_test <- test_webdata %>% 
+  flatten() %>% 
+  unnest(web_history)
+
+test$properties.AdditionalData
+```
