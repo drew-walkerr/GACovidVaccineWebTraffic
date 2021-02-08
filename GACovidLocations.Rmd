@@ -110,3 +110,11 @@ saveRDS(ga_county_covid_data_demographics_sex, ga_county_covid_data_demographics
 saveRDS(ga_county_covid_data_demographics_age, ga_county_covid_data_demographics_age_filename)
 
 ```
+
+# COVID Vaccine Rate for Georgia
+
+-   <https://datastudio.google.com/u/0/reporting/d848d61a-e99e-4961-b040-02b43edc5bb5/page/ptmtB>
+
+-   How to get data pulls from this graphic?
+
+-   
