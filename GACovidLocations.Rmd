@@ -118,3 +118,6 @@ saveRDS(ga_county_covid_data_demographics_age, ga_county_covid_data_demographics
 -   How to get data pulls from this graphic?
 
 -   
+# Google Trends Data r package
+- https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
+
