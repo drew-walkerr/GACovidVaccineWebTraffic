@@ -1,0 +1,22 @@
+---
+title: "Project Proposal"
+author: "Drew Walker"
+date: "2/16/2021"
+output: html_document
+---
+
+# GACovidVaccineWebTraffic
+
+-   This project is an effort to develop a flextable or shiny app to display current rates of COVID-19 vaccine location-based allotment, clinic site web traffic, and county-level data on cases and deaths, with demographic information by county. Stretch goal of this project is to access GA Covid
+
+[Link to my GACovidVaccineWebTraffic github repository](https://github.com/drew-walkerr/GACovidVaccineWebTraffic "Link to GACovidVaccineWebTraffic github")
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+For milestone 1, you will submit a PDF file. This document will contain two "links"
+
+1.  A link to your GitHub repository (either public or private in the Github organization for NRSG 741),an
+
+2.  A link or description about the source of your original data(if not actually stored in your Github repository). Please put your name on the first page of the document. Your milestone 1document shouldinclude the following information:

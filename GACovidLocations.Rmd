@@ -121,3 +121,15 @@ saveRDS(ga_county_covid_data_demographics_age, ga_county_covid_data_demographics
 # Google Trends Data r package
 - https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
 
+
+# Webscraping COVID Vaccine Distribution
+
+https://covid.cdc.gov/covid-data-tracker/#vaccinations 
+
+- There is a download .csv button here, that gives a dated/timestamped set of information on state-by-state vaccine allocation and administration dates. 
+
+# GA Vaccine Allocations PDF by clinic site/County
+
+https://dph.georgia.gov/covid-vaccine
+ * May be too difficult to clean/scrape this data 
+ 
