@@ -1,5 +1,5 @@
 # GACovidVaccineWebTraffic
-This project is an effort to develop a flextable or shiny app to display current rates of COVID-19 vaccine location-based allotment/order numbers, clinic site web traffic, and county-level data on cases and deaths, with demographic information by county. Stretch goal would be to grab actual distribution rate of vaccines by county from GA DPH. 
+This project is an effort to develop a flextable or shiny app to display current rates of COVID-19 vaccine location-based allotment/order numbers and clinic locations with clinic site web traffic, and county-level data on cases and deaths, with demographic information by county. Stretch goal would be to grab actual distribution rate of vaccines by county from GA DPH. 
 
 
 
