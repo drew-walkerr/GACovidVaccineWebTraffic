@@ -16,7 +16,7 @@ library(aws.alexa)
 
 # Load Data on GA Vaccine Locations
 
--   [<https://opendata.atlantaregional.com/datasets/JohnsCreekGA::vaccination-locations-in-georgia/data?geometry=-87.910%2C29.898%2C-78.813%2C36.333>](https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fopendata.atlantaregional.com%2Fdatasets%2FJohnsCreekGA%3A%3Avaccination-locations-in-georgia%2Fdata%3Fgeometry%3D-87.910%252C29.898%252C-78.813%252C36.333&data=04%7C01%7Candrew.walker%40emory.edu%7Cfb5e2f80f2ae44ab8cab08d8cb19d112%7Ce004fb9cb0a4424fbcd0322606d5df38%7C0%7C0%7C637482659032160171%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=3scGweksr%2BqLzj%2FBt%2BQXhe3N8fqY1M5ik9%2B%2BFO622YM%3D&reserved=0 "Original URL: https://opendata.atlantaregional.com/datasets/JohnsCreekGA::vaccination-locations-in-georgia/data?geometry=-87.910%2C29.898%2C-78.813%2C36.333. Click or tap if you trust this link.")
+-   [\<https://opendata.atlantaregional.com/datasets/JohnsCreekGA::vaccination-locations-in-georgia/data?geometry=-87.910%2C29.898%2C-78.813%2C36.333\>](https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fopendata.atlantaregional.com%2Fdatasets%2FJohnsCreekGA%3A%3Avaccination-locations-in-georgia%2Fdata%3Fgeometry%3D-87.910%252C29.898%252C-78.813%252C36.333&data=04%7C01%7Candrew.walker%40emory.edu%7Cfb5e2f80f2ae44ab8cab08d8cb19d112%7Ce004fb9cb0a4424fbcd0322606d5df38%7C0%7C0%7C637482659032160171%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=3scGweksr%2BqLzj%2FBt%2BQXhe3N8fqY1M5ik9%2B%2BFO622YM%3D&reserved=0 "Original URL: https://opendata.atlantaregional.com/datasets/JohnsCreekGA::vaccination-locations-in-georgia/data?geometry=-87.910%2C29.898%2C-78.813%2C36.333. Click or tap if you trust this link.")
 
 -   
 
@@ -118,18 +118,29 @@ saveRDS(ga_county_covid_data_demographics_age, ga_county_covid_data_demographics
 -   How to get data pulls from this graphic?
 
 -   
-# Google Trends Data r package
-- https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
 
+    # Google Trends Data r package
+
+-   <https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf>
 
 # Webscraping COVID Vaccine Distribution
 
-https://covid.cdc.gov/covid-data-tracker/#vaccinations 
+<https://covid.cdc.gov/covid-data-tracker/#vaccinations>
 
-- There is a download .csv button here, that gives a dated/timestamped set of information on state-by-state vaccine allocation and administration dates. 
+-   There is a download .csv button here, that gives a dated/timestamped set of information on state-by-state vaccine allocation and administration dates.
 
 # GA Vaccine Allocations PDF by clinic site/County
 
-https://dph.georgia.gov/covid-vaccine
- * May be too difficult to clean/scrape this data 
- 
+For this we use a pdf webscraping R code for the GA DPH vaccine order list pdf developed by Brad Brewington! <https://github.com/bbrewington>
+
+-   <https://dph.georgia.gov/document/document/georgia-covid-19-vaccine-plan/download>
+
+-   PDF- may be difficult to scrape GA DPH vaccine order list pdf thanks to <https://github.com/bbrewington> !
+
+# GA DPH Vaccine Distribution Dashboard
+
+<https://experience.arcgis.com/experience/3d8eea39f5c1443db1743a4cb8948a9c/>
+
+### How to webscrape in python
+
+<https://towardsdatascience.com/how-to-scrape-a-dashboard-with-python-8b088f6cecf3>

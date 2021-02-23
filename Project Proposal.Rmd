@@ -1,22 +1,203 @@
 ---
-title: "Project Proposal"
+title: 'Project Proposal: GACovidVaccineWebTraffic'
 author: "Drew Walker"
-date: "2/16/2021"
-output: html_document
+date: "`r format(Sys.Date())`"
+output:
+  html_document: default
+  pdf_document: default
+bibliography: references.bib
 ---
 
-# GACovidVaccineWebTraffic
-
--   This project is an effort to develop a flextable or shiny app to display current rates of COVID-19 vaccine location-based allotment, clinic site web traffic, and county-level data on cases and deaths, with demographic information by county. Stretch goal of this project is to access GA Covid
-
-[Link to my GACovidVaccineWebTraffic github repository](https://github.com/drew-walkerr/GACovidVaccineWebTraffic "Link to GACovidVaccineWebTraffic github")
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include = FALSE}
+library(knitr)
+library(tidyverse)
+library(tinytex)
 ```
 
-For milestone 1, you will submit a PDF file. This document will contain two "links"
+[[GACovidVaccineWebTraffic github repo]{.ul}](https://github.com/drew-walkerr/GACovidVaccineWebTraffic "Link to GACovidVaccineWebTraffic github")
 
-1.  A link to your GitHub repository (either public or private in the Github organization for NRSG 741),an
+## Project goals and motivation
 
-2.  A link or description about the source of your original data(if not actually stored in your Github repository). Please put your name on the first page of the document. Your milestone 1document shouldinclude the following information:
+The goal of this project is ultimately to try to assess the relationship between 31-day histories of website traffic at Georgia's COVID-19 vaccine clinic location websites with current data on GA county/clinic-level vaccine distribution and hopefully county-level vaccination. I also may try to incorporate visualizations to identify potentially underperforming counties or locations in terms of web traffic and distribution/vaccination. I sought to do this project in anticipation for when COVID-19 vaccine availability outpaces demand, as a way to begin to:
+
+1.  Target counties where there are gaps in vaccine interest and allotment, and
+
+2.  Assess success in any potential county-level vaccine promotion policies or campaigns.
+
+I'm very interested in the human behavior aspect of the COVID-19 pandemic, in which we have seen information spread and social norms play a key role in the adoption of masking, social distancing, and vaccination. Information from web traffic to vaccine websites and trends of county-specific vaccine google search terms may give us a rough but extremely timely estimate of the state of vaccine interest by county, as well as a potential to estimate groups in the "precontemplation" or "preparation" stages of motivation to get vaccinated [@tabacchi2017].
+
+Additionally, I've wanted to learn how to build dashboards/Shiny apps for a while, and there are many styles of COVID dashboards I could use to learn from. However, I have yet to see dashboards try to assess website traffic of clinics or web search trends as it relates to vaccine availability.
+
+## Project Objectives
+
+My primary focal question will be assessing if there is a relationship between the variables of clinic and county-based web traffic on vaccine clinic sites and Google search terms with rates of Georgia's COVID vaccine distribution, allotment, and (hopefully!) vaccination. I will also be interested in identifying counties that are potentially underperforming in vaccine distribution or interest by search terms/web traffic.
+
+## Data sources:
+
+### Data on COVID Vaccine Locations in GA
+
+Can be found at this link, from Atlanta Regional Commission's Open Data initiative. [[Able to be accessed via API or download]{.ul}](https://opendata.atlantaregional.com/datasets/JohnsCreekGA::vaccination-locations-in-georgia/data?geometry=-87.910%2C29.898%2C-78.813%2C36.333)
+
+#### Data Wrangling
+
+-   Location data opens up options for visualization on maps, though I have little experience with plotting GIS.
+
+-   Will need to combine these with other county data using FIPS codes, also will need to merge with vaccine allotment list.
+
+-   Many of these sites also provide a link to the clinic's standalone website on the next page, is this important to assess as well? How can I develop code to scrape for the clinic website address on the next page? Would that present issues for clinics/locations without a standalone appointment website?
+
+```{r head-vaccine-list, echo=FALSE}
+location_list <- readRDS(file = "data/location_list.rds")
+location_list <- location_list %>% 
+  select(properties.LocationName,properties.Address, properties.City, properties.State, properties.AdditionalData)
+kable(head(location_list), n = 5)
+```
+
+### Clinic Website Traffic
+
+Clinc/county-wide site web traffic, allows us to operationalize an element of contemplation/preparation-level interest and demand for the COVID-19 vaccine. Here I used the R package, [[`aws.alexa`]{.ul}](https://github.com/cloudyr/aws.alexa) , using [[AWS Alexa Web Information Service]{.ul}](https://aws.amazon.com/marketplace/pp/Amazon-Web-Services-Alexa-Web-Information-Service/B07Q71HJ3H) to iterate an estimated web traffic analysis on each row of the location websites in the dataset. I just need to do it \< 3 times a month, or I'll hit my free trial limit for the AWS API. For this reason I left my credentials out of the github repo and will likely use this snapshot to analyze until my final proejct.
+
+#### Data Wrangling
+
+-   For this dataset, I'll have to deal with the nested/repeat structure of the website trends dated back 31 days for each site.
+
+-   If I'm looking to do visualizations, I'll need to iterate them over each clinic for the final project.
+
+-   Also, further data wrangling may be needed depending on what sort of model I will be using, especially involving combining clinics into county-level data for web traffic. Clustered analysis may also be useful.
+
+#### EDA
+
+-   I'll need to assess the distribution of website traffic values to assess if there is an issue with many smaller clinic sites not getting traffic, look for missingness, and assess skew in higher population counties.
+
+-   I should also research Alexa AWS' traffic estimation methods. While I cannot place google analytics links within the clinic websites, this may offer my best bet for assessing traffic on public websites.
+
+```{r webtraffic-data, echo=FALSE}
+web_traffic_data <- readRDS(file = "data/2021-02-07 clinic_web_traffic_data.rds") 
+web_traffic_data <- web_traffic_data %>% 
+  select(-type,-properties.OBJECTID,-properties.Address, -properties.Zip, -geometry.type, -geometry.coordinates)
+kable(head(web_traffic_data, n = 5))
+
+```
+
+## GA's clinic-level COVID-19 vaccine order list
+
+This data is based off of GA DOH's pdf tables of clinics and their Pfizer and Moderna Requested and Allocated Doses.
+
+This data is stored in a pdf online at this [[download link]{.ul}.](https://dph.georgia.gov/document/document/vaccine-orders-list/download "Vaccine Order List Download Link") Thanks to [[Brad Brewington]{.ul}](https://github.com/bbrewington) , who developed an [[R function to convert this PDF table into tidydata](https://github.com/bbrewington/ga.dph.data/blob/master/R/get_ga_dph_vaccine_orders_list.R)]{.ul}.
+
+#### Data Wrangling:
+
+-   I'll need to join this with the other county-level data by clinic name/county, which I should be able to do with R's amazing [[fuzzyjoin]{.ul}](https://cran.r-project.org/web/packages/fuzzyjoin/index.html) package.
+
+-   I may need to combine Moderna/Pfizer as total vaccines to simplify modeling.
+
+-   I anticipate as new vaccines are added to this list, the code may break as the PDF table updates, in which case I can attempt to adjust the work on the PDF-scraping R function, or hope (read: pray) for an update in Brad's github.
+
+-   This dataset should also have a function to mutate a date column from when it was published, to be able to assess comparison with other data.
+
+-   Also, it may be helpful to create variable of disparity of requested vs allocated as a rough estimate of county-level need
+
+#### EDA
+
+-   I want to assess the distribution of vaccine doses requested here/allocated, seems like many clinics may be missing on given day
+
+-   Further research is needed on understanding timeline of Requested vs Allocated, and when those would be available to public, to assess need to incorporate lag in models
+
+-   The theoretical link between here is less strong as it would be for actual vaccination data
+
+```{r vaccine-order-list, echo=FALSE, message=FALSE}
+vaccine_order_list <- read_csv(file = "data/vaccine_orders_list.csv")
+kable(head(vaccine_order_list, n = 5))
+```
+
+## County-level data on cases and deaths, with demographic information by county
+
+[[Zip file download link from GA DPH website]{.ul}](https://dph.georgia.gov/covid-19-daily-status-report)on county-level data on cases and deaths. There is also available demographic information by county, but I'm not sure if I'll use it for this current analysis, as it is on cases/deaths by race, age, and sex.
+
+#### Data Wrangling
+
+I still have to decide if I want to include this, but thought it may demonstrate areas of severity or potentially be useful for modeling.
+
+#### EDA
+
+-   Will be important to assess distribution of values not only for this day but also for the 14 day rates
+
+```{r covid_data, echo=FALSE}
+
+ga_county_covid_data <- readRDS(file = "data/2021-02-07 ga_county_covid_data.rds")
+kable(head(ga_county_covid_data, n = 5))
+```
+
+## GA DPH Vaccination Distribution Dashboard
+
+[[Located here]{.ul}](https://experience.arcgis.com/experience/3d8eea39f5c1443db1743a4cb8948a9c/) , this dashboard provides very useful potential outputs for modeling, namely, doses administered. This data actually pulls from the [[Georgia Registry for Immunization Transactions and Services (GRITS)]{.ul}](https://dph.georgia.gov/immunization-section/georgia-immunization-registry-grits) *Gotta love the acronym!* and [[VTrcKS]{.ul}](https://www-cdc-gov.proxy.library.emory.edu/vaccines/programs/vtrcks/index.html)from the CDC.
+
+#### Data Wrangling
+
+-   I want to see if it might be possible to scrape data from this Dashboard, as it seems like the vaccine distribution registry sites are not open-access. I'm wondering if I can still get the county-level data from the dashboard.
+
+-   I imagine this would require a significant amount of coding, similar to PDF scraping if this is possible.
+
+#### EDA 
+
+-   I'd want to assess distribution of missingness in these reports, as well as the distributions of % of allotted vaccines that have been administered, as well as overall vaccination rate.
+
+## Analysis
+
+Ultimately, the type of modeling for this dataset is something I'm still trying to determine. My initial thoughts are:
+
+Multilevel modeling with cross-sectional/longitudinal data
+
+-   Would be useful to understand relationships about current website traffic and vaccine distribution, would allow us to cluster at clinic/county levels
+
+Growth curve modeling on clinic sites web traffic, vaccination/distribution rates
+
+-   Would help to determine if there was growing (or decaying) web traffic over previous 31 days.
+
+I will be learning these methods concurrently in my BSHES 728 Advanced Stats class, in the week of March 5th (multilevel modeling with cross-sectional data/GEE) and the week of March 12 (longitudinal multilevel modeling: exploring longitudinal data graphically/growth curve modeling). This will mean that my time leading up to these dates will involve data wrangling, EDA, visualizations, and work on developing the flextable or Shiny app back end.
+
+-   Weeks of 2/24-3/3:
+
+    -    I'm hoping I may learn some new methods on text scraping through class and our one-on-one meeting, to decide if I'll be trying to scrape the GA DPH dashboard.
+
+    -   Work on data wrangling and research flextable/Shiny, drafting designs of what final product will look like.
+
+    -   I am anticipating on learning multilevel modeling with cross-sectional data/GEE in my BSHES 728 Advanced Stats course around March 5th, and can get a sense of how models are structured in SAS/translate to R.
+
+    -   Seek adviser support on models to determine appropriateness
+
+    -   Decide on key visualizations (trends, growth curves, map of counties/clinics, gtables with plots)
+
+-   Weeks of 3/10-3/17:
+
+    -   I am anticipating on learning March 12 (Longitudinal multilevel modeling: exploring longitudinal data graphically/growth curve modeling), get a sense of how models are structured in SAS/translate to R
+
+    -   Work on visualizations
+
+    -   Create a functioning, basic-level flextable/Shiny app as a framework to start loading data into, developing input/output loops
+
+    -   Document workflow via notes/commits for Milestone 2
+
+-   Weeks of 3/24-3/31
+
+    -   Incorporate current models and visualizations into website
+
+    -   Test, redesign, retest iterations of flextable/Shiny app
+
+    -   Prepare and write submission for Milestone 2
+
+-   Weeks of 4/7-4/14
+
+    -   Refine models, flextable/Shiny app, assess feedback from Milestone 2
+
+    -   Further researching web traffic / behavior intention link in literature, expanding to marketing, developing story for presentation
+
+-   Weeks of 4/21-4/28
+
+    -   Make final adjustments to project, assess gaps using assignment guidelines
+
+    -   Practice presentation
+
+    -   Test, test, and retest flextable or Shiny app
+
+### References
