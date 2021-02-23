@@ -10,8 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # get_ga_dph_vaccine_orders_list
-```{r}
-
+```{r, load packages}
+library(tidyverse)
+library(pdftools)
+library(assertthat)
 ```
 
 * This is an incredibly helpful function from
@@ -20,13 +22,13 @@ https://github.com/bbrewington ! Thank you bbrewington!
 https://github.com/bbrewington/ga.dph.data/blob/master/R/get_ga_dph_vaccine_orders_list.R  
 
 ```{r, get_ga_vaccine_orders_list}
+
 get_ga_dph_vaccine_orders_list <- function() {
   library(tidyverse)
   library(pdftools)
   library(assertthat)
-
-  download.file("https://dph.georgia.gov/document/document/vaccine-orders-list/download",
-                destfile = "data/vaccine_orders_list_raw.pdf")
+url <- "https://dph.georgia.gov/document/document/vaccine-orders-list/download"
+download.file(url,"data/vaccine_orders_list_raw.pdf", mode="wb")
 
   # Split PDF into list, one entry per page
   pdf_text_by_page <- pdf_text("data/vaccine_orders_list_raw.pdf") %>%
@@ -65,5 +67,6 @@ get_ga_dph_vaccine_orders_list <- function() {
 
 get_ga_dph_vaccine_orders_list()
 
+vaccine_order_list <- get_ga_dph_vaccine_orders_list()
 ```
 
