@@ -6,12 +6,15 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-library(tidyverse)
-library(jsonlite)
-library(knitr)
-library(purrr)
-library(polite)
-library(aws.alexa)
+library(jsonlite); packageVersion("jsonlite")
+library(knitr); packageVersion("knitr")
+library(purrr); packageVersion("purrr")
+library(polite); packageVersion("polite")
+library(aws.alexa); packageVersion("aws.alexa")
+library(RCurl); packageVersion("RCurl")
+library(tidyverse); packageVersion("tidyverse")
+library(stringr); packageVersion("stringr")
+library(rvest); packageVersion("rvest")
 ```
 
 # Load Data on GA Vaccine Locations
@@ -141,6 +144,88 @@ For this we use a pdf webscraping R code for the GA DPH vaccine order list pdf d
 
 <https://experience.arcgis.com/experience/3d8eea39f5c1443db1743a4cb8948a9c/>
 
+```{r, try-with-rvest }
+url <- "https://experience.arcgis.com/experience/3d8eea39f5c1443db1743a4cb8948a9c/"
+css_selector <- "#g"
+tables <- read_html(url) %>% 
+  rvest::html_nodes(css_selector)
+
+attrs <- html_attrs(tables)
+tables$node
+
+
+
+```
+
+```{r selenium}
+library(RSelenium)
+library(wdman)
+
+library(RSelenium)
+driver <- remoteDriver()
+driver$open()
+driver$navigate("https://www.google.com/")
+selServ$process
+
+```
+
+```{r css-code}
+<g class="amcharts-graph-column amcharts-graph-graphAuto0_1614382946437" transform="translate(637,386)" aria-label=" Feb 17, 2021 60,297"><path cs="100,100" d="M0.5,0.5 L0.5,-331.5 L8.5,-331.5 L8.5,0.5 L0.5,0.5 Z" fill="#33a3ff" stroke="#33a3ff" fill-opacity="1" stroke-width="1" stroke-opacity="1" class="amcharts-graph-column-front amcharts-graph-column-element"></path></g>
+  
+  <g class="amcharts-graph-column amcharts-graph-graphAuto0_1614382946437" transform="translate(637,386)" aria-label=" Feb 17, 2021 60,297"><path cs="100,100" d="M0.5,0.5 L0.5,-331.5 L8.5,-331.5 L8.5,0.5 L0.5,0.5 Z" fill="#33a3ff" stroke="#33a3ff" fill-opacity="1" stroke-width="1" stroke-opacity="1" class="amcharts-graph-column-front amcharts-graph-column-element"></path></g>
+
+  
+//*[@id="ember154"]/div/div/svg/g[7]/g/g/g[68]
+
+
+tables$doc
+
+%>% 
+  html_nodes("externalptr") %>%
+    html_text()
+  
+  
+  
+  html_attr()
+   html_table(fill = TRUE)
+
+tables <- url  %>%
+html_text()
+
+  html_node("xml_node")
+
+  rvest::html_nodes("g")
+    
+    "g.amcharts-graph-column amcharts-graph-graphAuto0_1614229644565")
+
+<g class="amcharts-graph-column amcharts-graph-graphAuto0_1614229644565" transform="translate(726,386)" aria-label=" Feb 23, 2021 149"><path cs="100,100" d="M0.5,0.5 L0.5,-114.5 L11.5,-114.5 L11.5,0.5 L0.5,0.5 Z" fill="#33a3ff" stroke="#33a3ff" fill-opacity="1" stroke-width="1" stroke-opacity="1" class="amcharts-graph-column-front amcharts-graph-column-element"></path></g>
+  %>% 
+  purrr::pluck(span)
+
+  html_nodes()
+
+//*[(@id = "ifrSafe")]
+
+  html_nodes("table")
+Bowie_songs <- tables %>%
+  purrr::pluck(3)%>%
+  html_table(fill = TRUE)
+```
+
 ### How to webscrape in python
 
 <https://towardsdatascience.com/how-to-scrape-a-dashboard-with-python-8b088f6cecf3>
+
+click on County object
+
+\<span style id="ember280"
+
+class="flex-horizontal feature-list-item ember-view"\>
+
+Total vaccines administered that day
+
+\<g class="responsive-text-label"\>
+
+For barchart for county element
+
+\<g class="amcharts-graph-column amcharts-graph-graphAuto0_1614139615882" transform="translate(559,329)" aria-label=" Feb 18, 2021 53,021"\>\<path cs="100,100" d="M0.5,0.5 L0.5,-290.5 L7.5,-290.5 L7.5,0.5 L0.5,0.5 Z" fill="\#33a3ff" stroke="\#33a3ff" fill-opacity="1" stroke-width="1" stroke-opacity="1" class="amcharts-graph-column-front amcharts-graph-column-element"\>\</path\>\</g\>
