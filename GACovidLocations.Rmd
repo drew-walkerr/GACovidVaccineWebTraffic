@@ -44,10 +44,18 @@ creds <- sub("^[^_]*=", "", creds_raw)
 test <- head(location_list, n = 20)
 test <- location_list
 
+
+
 creds_ready <- creds_raw %>% 
   mutate(correct = substring(X1, regexpr("=", X1) + 1, nchar(X1))) %>% 
   select(correct)
 set_secret_key(key = creds_ready[1,1], secret = creds_ready[2,1])
+
+test_real_url <- traffic_history("https://www.yourtownhealth.com/")
+
+
+
+test_gph_url <- traffic_history("https://dph.georgia.gov/locations/clayton-county-health-department-forest-park-rec-covid-vaccine")
 
 test_webdata <- test %>% 
   mutate(web_history = map(test$properties.AdditionalData, traffic_history)) 
@@ -210,6 +218,43 @@ html_text()
 Bowie_songs <- tables %>%
   purrr::pluck(3)%>%
   html_table(fill = TRUE)
+
+#URL for Clinc Site 
+url2 <- "https://dph.georgia.gov/locations/1st-care-management"
+
+library(rvest)
+
+get_clinic_site_traffic <- function(ga_dph_url){
+site_webpage <- read_html(ga_dph_url) %>% 
+  html_nodes(".contact__link a") %>% 
+  html_attrs() %>% 
+  unlist() %>% 
+  str_remove("href") 
+traffic <- traffic_history(site_webpage)
+return(traffic)
+}
+
+traffic_test2 <- get_clinic_site_traffic(url2)
+
+
+
+str(site_webpage)
+site_webpage$
+
+
+site_webpage
+.contact__link a
+
+
+#Code for Element 
+<a href="https://1stcaremanagement.com/">COVID-19 Vaccine Appointments</a>
+#outer-html 
+  
+  <div class="contact__link"><a href="https://1stcaremanagement.com/">COVID-19 Vaccine Appointments</a></div>
+  
+  <a href="https://1stcaremanagement.com/">COVID-19 Vaccine Appointments</a>
+  
+  
 ```
 
 ### How to webscrape in python
