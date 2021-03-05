@@ -15,6 +15,9 @@ library(RCurl); packageVersion("RCurl")
 library(tidyverse); packageVersion("tidyverse")
 library(stringr); packageVersion("stringr")
 library(rvest); packageVersion("rvest")
+library(sp)
+library(maps)
+library(maptools)
 ```
 
 # Load Data on GA Vaccine Locations
@@ -51,7 +54,7 @@ return(traffic)
 
 ```
 
-```{r, alexa r package}
+```{r, alexa-get-data}
 
 creds_raw <- read_csv("rootkey.csv", col_names = FALSE)
 creds <- sub("^[^_]*=", "", creds_raw)
@@ -66,7 +69,7 @@ creds_ready <- creds_raw %>%
   select(correct)
 set_secret_key(key = creds_ready[1,1], secret = creds_ready[2,1])
 
-test_real_url <- traffic_history("https://www.yourtownhealth.com/", start = "20210107")
+test_real_url <- traffic_history("https://www.yourtownhealth.com/")
 
 
 test_gph_url <- traffic_history("https://dph.georgia.gov/locations/clayton-county-health-department-forest-park-rec-covid-vaccine")
@@ -76,15 +79,107 @@ possible_nonsite <- purrr::possibly(get_clinic_site_traffic, otherwise = tidyr::
 test_webdata <- test %>% 
   mutate(web_history = future_map(test$properties.AdditionalData, possible_nonsite),
          ga_dph_history = future_map(test$properties.AdditionalData,traffic_history)) 
-#Tidy Version
-clinic_web_traffic_data <- test_webdata %>% 
-  flatten() %>% 
-  unnest(web_history)
 
 
-
-test$properties.AdditionalData
 ```
+
+```{r read-data}
+
+#OR read in file
+
+web_data_file_list <- list.files(pattern="* clinic_web_traffic_data.rds")
+
+test_webdata <- lapply(web_data_file_list, readRDS)
+
+
+test_webdata <- test_webdata[[1]]
+
+test_webdata$ga_dph_history
+#Tidy Version
+clinic_web_traffic_data <- test_webdata %>%
+  unnest(web_history) 
+
+clinic_web_traffic_data_to_merge <- clinic_web_traffic_data %>% 
+  select(date,
+         properties.OBJECTID,
+         site,
+         start,
+         range,
+         page_views_per_million,
+         page_views_per_user,
+         rank,
+         reach_per_million)
+colnames(clinic_web_traffic_data_to_merge) <- paste("clinic_site", colnames(clinic_web_traffic_data_to_merge), sep = "_")
+
+clinic_web_traffic_data_to_merge <- clinic_web_traffic_data_to_merge %>% 
+  rename(properties.OBJECTID = clinic_site_properties.OBJECTID,
+         date=clinic_site_date)
+
+ga_dph_site_traffic_data <- test_webdata %>% 
+  unnest(ga_dph_history)
+colnames(ga_dph_site_traffic_data) <- paste("ga_dph_site", colnames(ga_dph_site_traffic_data), sep = "_")
+
+ga_dph_site_traffic_data_to_merge <- ga_dph_site_traffic_data %>% 
+  rename(properties.OBJECTID = ga_dph_site_properties.OBJECTID,
+         date=ga_dph_site_date)
+
+
+merged_dataset <- left_join(ga_dph_site_traffic_data_to_merge,clinic_web_traffic_data_to_merge, by = c("properties.OBJECTID","date"))
+```
+
+
+# Need to bring in county variable 
+
+```{r getting-counties}
+library(sp)
+library(maps)
+library(maptools)
+
+# The single argument to this function, pointsDF, is a data.frame in which:
+#   - column 1 contains the longitude in degrees (negative in the US)
+#   - column 2 contains the latitude in degrees
+
+mapping_split <- merged_dataset %>% 
+  unnest_wider(ga_dph_site_geometry.coordinates)
+
+
+lonlat <- tibble(mapping_split$...1, mapping_split$...2)
+lonlat <- as.data.frame(lonlat)
+
+
+lonlat_to_state_sp <- function(pointsDF) {
+    # Prepare SpatialPolygons object with one SpatialPolygon
+    # per state (plus DC, minus HI & AK)
+    states <- map('county', fill=TRUE, col="transparent", plot=FALSE)
+    IDs <- sapply(strsplit(states$names, ":"), function(x) x[1])
+    states_sp <- map2SpatialPolygons(states, IDs=IDs,
+                     proj4string=CRS("+proj=longlat +datum=WGS84"))
+
+    # Convert pointsDF to a SpatialPoints object 
+    pointsSP <- SpatialPoints(pointsDF, 
+                    proj4string=CRS("+proj=longlat +datum=WGS84"))
+
+    # Use 'over' to get _indices_ of the Polygons object containing each point 
+        indices <- over(pointsSP, states_sp)
+
+    # Return the state names of the Polygons object containing each point
+    stateNames <- sapply(states_sp@polygons, function(x) x@ID)
+    stateNames[indices]
+}
+lonlat_with_counties <- lonlat %>% 
+  mutate(county_raw = lonlat_to_state_sp(lonlat))
+counties <- lonlat_to_state_sp(lonlat)
+
+mapping_split_counties <- mapping_split %>% 
+  mutate(county_raw = lonlat_to_state_sp(tibble(...1,...2)),
+         county_clean = str_to_title(str_extract(county_raw, "(?<=georgia,)\\w+")))
+
+mapping_split_counties_and_fips <- left_join(mapping_split_counties,county.fips, by = c("county_raw"="polyname"))
+
+county.fips
+                                                                   
+```
+
 
 # COVID-19 GA County Data
 
@@ -129,6 +224,7 @@ ga_county_covid_data_demographics_sex_filename <- paste(Sys.Date(),"ga_county_co
 
 ga_county_covid_data_demographics_age_filename <- paste(Sys.Date(),"ga_county_covid_data_demographics_age.rds")
 
+mapping_split_counties_and_fips_filename <- paste(Sys.Date(),"mapping_split_counties_and_fips.rds")
 
 
 saveRDS(test_webdata, clinic_web_traffic_data_filename)
@@ -136,6 +232,8 @@ saveRDS(ga_county_covid_data, ga_county_covid_data_filename)
 saveRDS(ga_county_covid_data_demographics_race, ga_county_covid_data_demographics_race_filename)
 saveRDS(ga_county_covid_data_demographics_sex, ga_county_covid_data_demographics_sex_filename)
 saveRDS(ga_county_covid_data_demographics_age, ga_county_covid_data_demographics_age_filename)
+
+saveRDS(mapping_split_counties_and_fips,mapping_split_counties_and_fips_filename)
 
 ```
 
