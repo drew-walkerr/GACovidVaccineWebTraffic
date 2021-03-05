@@ -36,6 +36,21 @@ kable(location_list)
 
 <https://github.com/cloudyr/aws.alexa>
 
+```{r scrape-clinic-site-function}
+library(rvest)
+
+get_clinic_site_traffic <- function(ga_dph_url){
+site_webpage <- read_html(ga_dph_url) %>% 
+  html_nodes(".contact__link a") %>% 
+  html_attrs() %>% 
+  unlist() %>% 
+  str_remove("href") 
+traffic <- traffic_history(site_webpage)
+return(traffic)
+}
+
+```
+
 ```{r, alexa r package}
 
 creds_raw <- read_csv("rootkey.csv", col_names = FALSE)
@@ -51,14 +66,16 @@ creds_ready <- creds_raw %>%
   select(correct)
 set_secret_key(key = creds_ready[1,1], secret = creds_ready[2,1])
 
-test_real_url <- traffic_history("https://www.yourtownhealth.com/")
-
+test_real_url <- traffic_history("https://www.yourtownhealth.com/", start = "20210107")
 
 
 test_gph_url <- traffic_history("https://dph.georgia.gov/locations/clayton-county-health-department-forest-park-rec-covid-vaccine")
-
+library(purrr)
+library(furrr)
+possible_nonsite <- purrr::possibly(get_clinic_site_traffic, otherwise = tidyr::tibble("NA"))
 test_webdata <- test %>% 
-  mutate(web_history = map(test$properties.AdditionalData, traffic_history)) 
+  mutate(web_history = future_map(test$properties.AdditionalData, possible_nonsite),
+         ga_dph_history = future_map(test$properties.AdditionalData,traffic_history)) 
 #Tidy Version
 clinic_web_traffic_data <- test_webdata %>% 
   flatten() %>% 
@@ -100,7 +117,7 @@ unlink(temp)
 ```
 
 ```{r, write_dataframes}
-clinic_web_traffic_data_tibble <- as_tibble(clinic_web_traffic_data)
+clinic_web_traffic_data_tibble <- as_tibble(test_webdata)
 
 clinic_web_traffic_data_filename <- paste(Sys.Date(),"clinic_web_traffic_data.rds")
 
@@ -114,7 +131,7 @@ ga_county_covid_data_demographics_age_filename <- paste(Sys.Date(),"ga_county_co
 
 
 
-saveRDS(clinic_web_traffic_data, clinic_web_traffic_data_filename)
+saveRDS(test_webdata, clinic_web_traffic_data_filename)
 saveRDS(ga_county_covid_data, ga_county_covid_data_filename)
 saveRDS(ga_county_covid_data_demographics_race, ga_county_covid_data_demographics_race_filename)
 saveRDS(ga_county_covid_data_demographics_sex, ga_county_covid_data_demographics_sex_filename)
