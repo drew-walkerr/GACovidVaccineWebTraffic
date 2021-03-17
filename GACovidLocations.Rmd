@@ -176,7 +176,17 @@ mapping_split_counties <- mapping_split %>%
 
 mapping_split_counties_and_fips <- left_join(mapping_split_counties,county.fips, by = c("county_raw"="polyname"))
 
-county.fips
+str(mapping_split_counties_and_fips)
+
+
+mapping_split_counties_and_fips %>% 
+  select(properties.OBJECTID,fips) %>% 
+  distinct(properties.OBJECTID,fips) %>% 
+  group_by(fips) %>% 
+  count(properties.OBJECTID,sort = TRUE)
+
+  summarise(ga_dph_na = sum(is.na(ga_dph_site_page_views_per_million)),
+            clinic_site_na= sum(is.na(clinic_site_page_views_per_million)))
                                                                    
 ```
 
@@ -233,7 +243,7 @@ saveRDS(ga_county_covid_data_demographics_race, ga_county_covid_data_demographic
 saveRDS(ga_county_covid_data_demographics_sex, ga_county_covid_data_demographics_sex_filename)
 saveRDS(ga_county_covid_data_demographics_age, ga_county_covid_data_demographics_age_filename)
 
-saveRDS(mapping_split_counties_and_fips,mapping_split_counties_and_fips_filename)
+saveRDS(mapping_split_counties_and_fips,mapping_split_counties_and_fips_filename
 
 ```
 
