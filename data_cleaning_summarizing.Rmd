@@ -1,0 +1,108 @@
+---
+title: "data_cleaning_summarizing"
+author: "Drew Walker"
+date: "3/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(jsonlite); packageVersion("jsonlite")
+library(knitr); packageVersion("knitr")
+library(purrr); packageVersion("purrr")
+library(polite); packageVersion("polite")
+library(aws.alexa); packageVersion("aws.alexa")
+library(RCurl); packageVersion("RCurl")
+library(tidyverse); packageVersion("tidyverse")
+library(stringr); packageVersion("stringr")
+library(rvest); packageVersion("rvest")
+library(sp)
+library(maps)
+library(maptools)
+library(here)
+```
+
+```{r, load_data}
+files <- dir(path = here("data"), pattern = "mapping_split_counties_and_fips.rds$", full.names = TRUE)
+tbl <- sapply(files, read_rds, simplify = FALSE) %>%
+  bind_rows(.id = "fileid")
+```
+
+```{r, urls}
+#Making unique urls for each clinic site url, to see if clinic sites share urls 
+tbl_with_urls <- tbl %>% 
+  group_by(clinic_site_site) %>% 
+  mutate(clinic_url_id = as.factor(cur_group_id())) %>% 
+  ungroup()
+
+str(tbl_with_urls)
+
+tbl_with_urls$properties.OBJECTID <- as.factor(tbl_with_urls$properties.OBJECTID)
+
+urls_summary_table <- tbl_with_urls %>% 
+  group_by(clinic_url_id) %>% 
+  distinct(properties.OBJECTID) %>% 
+  count(name = "clinics_served_by_url")
+
+tbl_with_urls_merged <- left_join(tbl_with_urls,urls_summary_table, by = "clinic_url_id")
+
+tbls_with_url_merged_clean <- tbl_with_urls_merged %>% 
+  filter(clinic_url_id != "57") 
+
+by_county_data <- tbls_with_url_merged_clean %>% 
+  group_by(fips) %>% 
+  count(properties.OBJECTID, name = "number_of_data_points_by_clinic_site") 
+
+clinics_per_county <- tbls_with_url_merged_clean %>% 
+  group_by(fips) %>% 
+  add_count(fips, name = "number_of_data_points_per_county")
+
+clinics_per_county_and_data_per_clinic <- left_join(clinics_per_county, by_county_data, by = "fips")
+
+hist(by_county_data$number_of_data_points_by_clinic_site)
+
+clinics_per_county_distinct <- clinics_per_county %>% 
+  distinct(properties.OBJECTID, .keep_all = TRUE) %>% 
+  group_by(fips) %>% 
+  add_count(fips, name = "number_of_real_clinics_per_county")
+
+hist(clinics_per_county$number_of_clinics_per_county)
+
+
+```
+
+56 / 330 clinics have url links in this sample. Need to also look at how many counties this covers to see how many clusters.
+
+-   How many counties have clinics with functioning urls?
+
+-   Merge clinics served data
+
+-   Should I filter out NAs? Or should I try to fill in the dates with 0s? How to account for this ordinal/kind of unknown cut off
+
+-   Seeing if there's enough data there to run some analyses on differing rates of broadband in counties on vaccine website traffic
+
+-   If having broadband access impacts whether or not they're going to have a website
+
+-   How many websites are e-mail forms
+
+-   how many websites are facebook -- these have way higher reach
+
+-   how many are chain
+
+-   how many valid dates do we have?
+
+## Broadband Data
+
+county.fips
+
+```{r, read_data}
+broadband_data_raw <- read_csv(here("data","broadband_data_opendatachallenge.csv"))
+
+broadband_ga <- broadband_data_raw %>% 
+  filter(State == "Georgia") %>% 
+  mutate(polyname = str_to_lower(paste0(State,",",County)))
+
+broadband_ga_with_fips <- left_join(broadband_ga,county.fips,by = "polyname")
+
+write_csv(broadband_ga_with_fips,"broadband_ga_with_fips.csv")
+```
