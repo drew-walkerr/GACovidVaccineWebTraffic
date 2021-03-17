@@ -243,9 +243,19 @@ saveRDS(ga_county_covid_data_demographics_race, ga_county_covid_data_demographic
 saveRDS(ga_county_covid_data_demographics_sex, ga_county_covid_data_demographics_sex_filename)
 saveRDS(ga_county_covid_data_demographics_age, ga_county_covid_data_demographics_age_filename)
 
-saveRDS(mapping_split_counties_and_fips,mapping_split_counties_and_fips_filename
+saveRDS(mapping_split_counties_and_fips,mapping_split_counties_and_fips_filename)
 
 ```
+
+```{r, loading_county_broadband_adoption_rate}
+
+```
+
+Use https://i3connect.org/localities/new 
+for internet broadband adoption rates
+
+
+
 
 # COVID Vaccine Rate for Georgia
 
